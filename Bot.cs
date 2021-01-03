@@ -29,7 +29,7 @@ namespace MyDiscordBot
             }
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
-            
+
             var config = new DiscordConfiguration
             {
                 Token = configJson.Token,
@@ -52,11 +52,14 @@ namespace MyDiscordBot
                 StringPrefixes = new [] {configJson.Prefix},
                 EnableDms = false,
                 EnableMentionPrefix = true,
-                DmHelp = true
+                DmHelp = false
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
+
             Commands.RegisterCommands<LolCommands>();
+            Commands.RegisterCommands<TeamCommands>();
+            Commands.RegisterCommands<PolcrazCommands>();
 
             await Client.ConnectAsync();
             await Task.Delay(-1);
