@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using YoutubeExplode;
 
 namespace MyDiscordBot.Commands
 {
@@ -42,6 +43,22 @@ namespace MyDiscordBot.Commands
             kekW += "```";
             await ctx.Channel.SendMessageAsync($"{kekW}").ConfigureAwait(false);
 
+        }
+
+        [Command("search")]
+        [Description("Returns youtube search list")]
+        public async Task Search(CommandContext ctx, string query)
+        {
+            var youtube = new YoutubeClient();
+            var k = await youtube.Search.GetVideosAsync(query, 0, 1);
+            var message = "```markdown\n";
+            foreach (var video1 in k)
+            {
+                message += $"{video1.Title} | {video1.Author} | {video1.Duration}\n";
+            }
+
+            message += "```";
+            await ctx.Channel.SendMessageAsync(message).ConfigureAwait(false);
         }
     }
 }
