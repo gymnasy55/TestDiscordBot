@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -32,7 +34,7 @@ namespace MyDiscordBot.Commands
             {
                 var role = ctx.Guild.GetRole(795261938992939029);
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
-            } 
+            }
             else if (reactionResult.Result.Emoji == thumbsDownEmoji)
             {
                 var role = ctx.Guild.GetRole(795261938992939029);
@@ -40,6 +42,25 @@ namespace MyDiscordBot.Commands
             }
 
             await joinMessage.DeleteAsync().ConfigureAwait(false);
+        }
+
+        [Command("poll")]
+        public async Task Poll(CommandContext ctx, TimeSpan duration, params DiscordEmoji[] emojiOptions)
+        {
+            var interactivity = ctx.Client.GetInteractivity();
+            var options = emojiOptions.Select(x => x.ToString());
+            var pollEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Poll",
+                Description = string.Join(" ", options),
+                Color = DiscordColor.Azure
+            };
+            var pollMessage = await ctx.Channel.SendMessageAsync(embed: pollEmbed).ConfigureAwait(false);
+            foreach (var emoji in emojiOptions) await pollMessage.CreateReactionAsync(emoji).ConfigureAwait(false);
+            var result = await interactivity.CollectReactionsAsync(pollMessage, duration).ConfigureAwait(false);
+            var distinctResult = result.Distinct();
+            var results = distinctResult.Select(x => $"{x.Emoji}: {x.Total}");
+            await ctx.Channel.SendMessageAsync(string.Join("\n", results)).ConfigureAwait(false);
         }
     }
 }
