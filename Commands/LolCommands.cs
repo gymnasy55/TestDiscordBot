@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity.Extensions;
+using MyDiscordBot.Attributes;
 
 namespace MyDiscordBot.Commands
 {
@@ -10,6 +12,7 @@ namespace MyDiscordBot.Commands
     {
         [Command("ping")]
         [Description("Returns Pong")]
+        [RequireCategories(ChannelCheckMode.Any, "TEXT")]
         public async Task Ping(CommandContext ctx)
         {
             var user = ctx.Member.Mention;

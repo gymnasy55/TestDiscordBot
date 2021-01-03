@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -7,11 +8,9 @@ namespace MyDiscordBot
 {
     public class Repositories
     {
-        [JsonProperty("name")]
-        public string Name { get; private set; }
+        [JsonProperty("name")] public string Name { get; private set; }
 
-        [JsonProperty("html_url")]
-        public string Url { get; private set; }
+        [JsonProperty("html_url")] public string Url { get; private set; }
 
         public static async Task<List<Repositories>> GetRepositories(string url)
         {
@@ -19,7 +18,7 @@ namespace MyDiscordBot
 
             using (var client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.UserAgent.TryParseAdd("request");
                 using var response = client.GetAsync("https://api.github.com/users/gymnasy55/repos?sort=updated").Result;
                 response.EnsureSuccessStatusCode();
