@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.VoiceNext;
 using YoutubeExplode;
+using YoutubeExplode.Videos.Streams;
 
 namespace MyDiscordBot.Commands
 {
@@ -51,14 +53,88 @@ namespace MyDiscordBot.Commands
         {
             var youtube = new YoutubeClient();
             var k = await youtube.Search.GetVideosAsync(query, 0, 1);
-            var message = "```markdown\n";
-            foreach (var video1 in k)
-            {
-                message += $"{video1.Title} | {video1.Author} | {video1.Duration}\n";
-            }
-
+            var message = k.Aggregate("```markdown\n", (current, video1) => current + $"{video1.Title} | {video1.Author} | {video1.Duration}\n");
             message += "```";
             await ctx.Channel.SendMessageAsync(message).ConfigureAwait(false);
+        }
+
+        [Command("play")]
+        [Description("Play a song")]
+        public async Task Play(CommandContext ctx, string query)
+        {
+            var youtube = new YoutubeClient();
+            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(query);
+            var streamInfo = streamManifest.GetAudioOnly().WithHighestBitrate();
+            await ctx.Guild.CreateVoiceChannelAsync("123");
+        }
+
+        [Command("joinvoice")]
+        [Description("Connect bot to your voice channel")]
+        public async Task Join(CommandContext ctx, DiscordChannel chn = null)
+        {
+            //check whether VNext is enabled
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                //not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
+
+            //check whether we aren't already connected
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc != null)
+            {
+                //already connected
+                await ctx.RespondAsync("Already connected in this guild.");
+                return;
+            }
+
+            //get member's voice state
+            var vstat = ctx.Member?.VoiceState;
+            if (vstat?.Channel == null && chn == null)
+            {
+                //they did not specify a channel and are not in one
+                await ctx.RespondAsync("You are not in a voice channel.");
+                return;
+            }
+
+            //channel not specified, use user's
+            if (chn == null)
+                chn = vstat.Channel;
+
+            //connect
+            vnc = await vnext.ConnectAsync(chn);
+            await ctx.RespondAsync($"Connected to `{chn.Name}`");
+        }
+
+        [Command("leavevoice")]
+        [Description("Connect bot to your voice channel")]
+        public async Task Leave(CommandContext ctx)
+        {
+            //check whether VNext is enabled
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
+
+            //check whether we are connected
+            var vnc = vnext.GetConnection(ctx.Guild); //TODO: Гилд почему-то null, даже если он зашел на сервер
+                                                      //TODO: (в Bot.cs 87 строке выводятся подключенные сервера))
+                                                      //TODO: скрин в Screenshoots/guildnull.png
+            if (vnc == null)
+            {
+                //not connected
+                await ctx.RespondAsync("Not connected in this guild.");
+                return;
+            }
+
+            //disconnect
+            vnc.Disconnect();
+            await ctx.RespondAsync("Disconnected");
         }
     }
 }
