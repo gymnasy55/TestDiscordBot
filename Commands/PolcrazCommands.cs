@@ -13,8 +13,7 @@ namespace MyDiscordBot.Commands
 {
     public class PolcrazCommands : BaseCommandModule
     {
-        [Command("roll")]
-        [Description("Returns random value")]
+        [Command("roll"), Description("Returns random value")]
         public async Task Roll(CommandContext ctx,
             [Description("First Value")] int first,
             [Description("Second Value")] int second = 0)
@@ -24,8 +23,7 @@ namespace MyDiscordBot.Commands
             await ctx.Channel.SendMessageAsync($"{user} {rndValue}");
         }
 
-        [Command("github")]
-        [Description("Returns our repositories list")]
+        [Command("github"), Description("Returns our repositories list")]
         public async Task Github(CommandContext ctx)
         {
             var message = new DiscordEmbedBuilder
@@ -47,8 +45,7 @@ namespace MyDiscordBot.Commands
 
         }
 
-        [Command("search")]
-        [Description("Returns youtube search list")]
+        [Command("search"), Description("Returns youtube search list")]
         public async Task Search(CommandContext ctx, string query)
         {
             var youtube = new YoutubeClient();
@@ -58,8 +55,7 @@ namespace MyDiscordBot.Commands
             await ctx.Channel.SendMessageAsync(message).ConfigureAwait(false);
         }
 
-        [Command("play")]
-        [Description("Play a song")]
+        [Command("play"), Description("Play a song")]
         public async Task Play(CommandContext ctx, string query)
         {
             var youtube = new YoutubeClient();
@@ -68,8 +64,7 @@ namespace MyDiscordBot.Commands
             await ctx.Guild.CreateVoiceChannelAsync("123");
         }
 
-        [Command("joinvoice")]
-        [Description("Connect bot to your voice channel")]
+        [Command("joinvoice"), Description("Connect bot to your voice channel")]
         public async Task Join(CommandContext ctx, DiscordChannel chn = null)
         {
             //check whether VNext is enabled
@@ -108,11 +103,10 @@ namespace MyDiscordBot.Commands
             await ctx.RespondAsync($"Connected to `{chn.Name}`");
         }
 
-        [Command("leavevoice")]
-        [Description("Connect bot to your voice channel")]
+        [Command("leavevoice"), Description("Connect bot to your voice channel")]
         public async Task Leave(CommandContext ctx)
         {
-            //check whether VNext is enabled
+            // check whether VNext is enabled
             var vnext = ctx.Client.GetVoiceNext();
             if (vnext == null)
             {
@@ -121,18 +115,16 @@ namespace MyDiscordBot.Commands
                 return;
             }
 
-            //check whether we are connected
-            var vnc = vnext.GetConnection(ctx.Guild); //TODO: Гилд почему-то null, даже если он зашел на сервер
-                                                      //TODO: (в Bot.cs 87 строке выводятся подключенные сервера))
-                                                      //TODO: скрин в Screenshoots/guildnull.png
+            // check whether we are connected
+            var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc == null)
             {
-                //not connected
+                // not connected
                 await ctx.RespondAsync("Not connected in this guild.");
                 return;
             }
 
-            //disconnect
+            // disconnect
             vnc.Disconnect();
             await ctx.RespondAsync("Disconnected");
         }
